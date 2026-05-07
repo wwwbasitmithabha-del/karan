@@ -1,0 +1,323 @@
+
+<h2 class="sr-only">Karan's CA Study Tracker — mobile app with daily schedule, subject progress, streak counter and motivation</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{width:100%;font-family:var(--font-sans);max-width:380px;margin:0 auto}
+.hero{background:#0f1f3d;border-radius:var(--border-radius-lg);padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,180,40,.07)}
+.hero-row{display:flex;align-items:flex-start;justify-content:space-between}
+.hero-name{font-size:15px;font-weight:500;color:#fff}
+.hero-sub{font-size:11px;color:rgba(255,255,255,.45);margin-top:2px}
+.hero-badge{background:rgba(255,185,40,.15);border:1px solid rgba(255,185,40,.35);color:#ffc94a;font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.cd-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:12px}
+.cd-box{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 4px;text-align:center}
+.cd-num{font-size:17px;font-weight:500;color:#fff}
+.cd-lbl{font-size:9px;color:rgba(255,255,255,.4);margin-top:1px}
+
+.nav{display:flex;gap:4px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:3px;margin-bottom:10px}
+.nb{flex:1;padding:8px 4px;border:none;background:transparent;border-radius:6px;font-size:12px;color:var(--color-text-secondary);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;transition:all .15s}
+.nb i{font-size:17px}
+.nb.on{background:var(--color-background-primary);color:var(--color-text-primary);border:0.5px solid var(--color-border-secondary);font-weight:500}
+
+.sec{display:none}.sec.v{display:block}
+
+.stats2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}
+.sc{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px}
+.sc-val{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.sc-lbl{font-size:11px;color:var(--color-text-secondary);margin-top:2px}
+.sc-icon{font-size:15px;margin-bottom:3px}
+.amber-v{color:#BA7517}.teal-v{color:#0F6E56}.blue-v{color:#185FA5}.green-v{color:#3B6D11}
+
+.day-strip{display:flex;gap:5px;margin-bottom:10px;justify-content:space-between}
+.dd{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.dd-circle{width:34px;height:34px;border-radius:50%;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--color-text-secondary);transition:all .15s}
+.dd-circle.today{border:2px solid #1D9E75;color:#1D9E75}
+.dd-circle.sel{background:#1D9E75;color:#fff;border-color:#1D9E75}
+.dd-lbl{font-size:10px;color:var(--color-text-secondary)}
+
+.now-bar{background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.22);border-radius:var(--border-radius-md);padding:9px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.now-dot{width:7px;height:7px;border-radius:50%;background:#1D9E75;flex-shrink:0}
+.now-txt{font-size:12px;color:var(--color-text-primary)}
+
+.task-list{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.task-row{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.task-row:last-child{border-bottom:none}
+.task-row.done-row{background:var(--color-background-secondary)}
+.task-time{font-size:10px;color:var(--color-text-secondary);min-width:34px}
+.task-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:500;min-width:28px;text-align:center}
+.tg-tax{background:#FAECE7;color:#993C1D}.tg-law{background:#EEEDFE;color:#3C3489}
+.tg-acc{background:#E6F1FB;color:#0C447C}.tg-eng{background:#EAF3DE;color:#27500A}
+.tg-cost{background:#FAEEDA;color:#633806}.tg-audit{background:#FBEAF0;color:#72243E}
+.tg-fm{background:#E1F5EE;color:#085041}.tg-life{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.task-name{flex:1;font-size:12px;color:var(--color-text-primary);line-height:1.3}
+.task-name.struck{color:var(--color-text-secondary);text-decoration:line-through}
+.chk{width:22px;height:22px;border:1.5px solid var(--color-border-secondary);border-radius:5px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--color-background-primary);flex-shrink:0;transition:all .12s}
+.chk.done{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.chk i{font-size:13px;display:none}.chk.done i{display:block}
+
+.prog-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px;margin-bottom:10px}
+.prog-title{font-size:12px;font-weight:500;color:var(--color-text-primary);margin-bottom:10px}
+.sub-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sub-nm{width:60px;font-size:11px;color:var(--color-text-secondary)}
+.bar-bg{flex:1;height:5px;background:var(--color-border-tertiary);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .4s}
+.bar-pct{width:28px;font-size:11px;color:var(--color-text-secondary);text-align:right}
+
+.ring-area{display:flex;justify-content:center;align-items:center;gap:16px;padding:12px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);margin-bottom:10px}
+.ring-wrap{position:relative;width:72px;height:72px;flex-shrink:0}
+.ring-wrap svg{position:absolute;top:0;left:0}
+.ring-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.ring-num{font-size:17px;font-weight:500;color:var(--color-text-primary)}
+.ring-sub{font-size:9px;color:var(--color-text-secondary)}
+.ring-info{flex:1}
+.ring-info-title{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:4px}
+.ring-info-txt{font-size:11px;color:var(--color-text-secondary);line-height:1.5}
+
+.mot-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px;margin-bottom:8px}
+.mot-head{font-size:13px;font-weight:500;color:var(--color-text-primary);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.mot-txt{font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+.mot-q{font-style:italic;color:var(--color-text-primary);margin-top:8px;border-left:2px solid #1D9E75;padding-left:9px;font-size:12px;border-radius:0}
+.tip-btn{width:100%;padding:10px;font-size:13px;border-radius:var(--border-radius-md);margin-top:4px}
+</style>
+
+<div class="app">
+  <div class="hero">
+    <div class="hero-row">
+      <div>
+        <div class="hero-name"><i class="ti ti-brain" aria-hidden="true" style="margin-right:5px"></i>Karan's CA Tracker</div>
+        <div class="hero-sub">Financial Muscle Building Plan</div>
+      </div>
+      <div class="hero-badge"><i class="ti ti-target" aria-hidden="true" style="margin-right:3px"></i>May 2027</div>
+    </div>
+    <div class="cd-row">
+      <div class="cd-box"><div class="cd-num" id="cd-d">--</div><div class="cd-lbl">days</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-m">--</div><div class="cd-lbl">months</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-w">--</div><div class="cd-lbl">weeks</div></div>
+      <div class="cd-box"><div class="cd-num" id="cd-h">--</div><div class="cd-lbl">study hrs</div></div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <button class="nb on" onclick="showTab('tracker')" id="tab-tracker"><i class="ti ti-list-check" aria-hidden="true"></i>Today</button>
+    <button class="nb" onclick="showTab('progress')" id="tab-progress"><i class="ti ti-chart-bar" aria-hidden="true"></i>Progress</button>
+    <button class="nb" onclick="showTab('fuel')" id="tab-fuel"><i class="ti ti-star" aria-hidden="true"></i>Fuel</button>
+  </div>
+
+  <div class="sec v" id="sec-tracker">
+    <div class="stats2">
+      <div class="sc"><div class="sc-icon"><i class="ti ti-flame" aria-hidden="true" class="amber-v" style="color:#BA7517"></i></div><div class="sc-val amber-v" id="s-streak">0</div><div class="sc-lbl">Day streak</div></div>
+      <div class="sc"><div class="sc-icon"><i class="ti ti-check" aria-hidden="true" style="color:#0F6E56"></i></div><div class="sc-val teal-v" id="s-today">0/16</div><div class="sc-lbl">Done today</div></div>
+      <div class="sc"><div class="sc-icon"><i class="ti ti-clock" aria-hidden="true" style="color:#185FA5"></i></div><div class="sc-val blue-v" id="s-hours">0h</div><div class="sc-lbl">Study hours</div></div>
+      <div class="sc"><div class="sc-icon"><i class="ti ti-trophy" aria-hidden="true" style="color:#3B6D11"></i></div><div class="sc-val green-v" id="s-week">0%</div><div class="sc-lbl">Week done</div></div>
+    </div>
+
+    <div class="day-strip" id="day-strip"></div>
+
+    <div class="now-bar">
+      <div class="now-dot"></div>
+      <div class="now-txt" id="now-txt">Tap checkboxes to mark tasks done</div>
+    </div>
+
+    <div class="task-list" id="task-list"></div>
+  </div>
+
+  <div class="sec" id="sec-progress">
+    <div class="ring-area">
+      <div class="ring-wrap">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="var(--color-border-tertiary)" stroke-width="5"/>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#1D9E75" stroke-width="5" stroke-dasharray="176" id="ring" stroke-dashoffset="176" stroke-linecap="round" transform="rotate(-90 36 36)"/>
+        </svg>
+        <div class="ring-ctr"><div class="ring-num" id="ring-pct">0%</div><div class="ring-sub">done</div></div>
+      </div>
+      <div class="ring-info">
+        <div class="ring-info-title">Weekly completion</div>
+        <div class="ring-info-txt" id="ring-detail">Track all 7 days to see your progress build up here.</div>
+      </div>
+    </div>
+    <div class="prog-card">
+      <div class="prog-title"><i class="ti ti-books" aria-hidden="true" style="margin-right:5px;color:#185FA5"></i>Subject coverage this week</div>
+      <div id="sub-bars"></div>
+    </div>
+    <div class="mot-card">
+      <div class="mot-head"><i class="ti ti-bulb" aria-hidden="true" style="color:#BA7517"></i>Quick study tips</div>
+      <div class="mot-txt">Tax: 10 MCQs every morning before notes.<br>Law: Write a 3-line summary from memory after reading.<br>Accounts: Hand-write journal entries, always.<br>Audit: Treat each SA like a story — who, what, why, how.<br>FM-SM: Cover formula sheet, recall it, repeat.</div>
+    </div>
+  </div>
+
+  <div class="sec" id="sec-fuel">
+    <div class="mot-card">
+      <div class="mot-head"><i class="ti ti-star" aria-hidden="true" style="color:#BA7517"></i>Karan's motivation</div>
+      <div class="mot-txt">You're not an average student — you're an Undercover Legend.</div>
+      <div class="mot-q">"By May 2027, you'll be a CA. Everyone will ask 'How?' You'll smile: 'I laughed my way to the top!'"</div>
+    </div>
+    <div class="mot-card">
+      <div class="mot-head"><i class="ti ti-heart" aria-hidden="true" style="color:#993556"></i>CA relationship status</div>
+      <div class="mot-txt">In a committed relationship with my Calculator. It's the only one who truly counts my feelings.</div>
+    </div>
+    <div class="mot-card">
+      <div class="mot-head"><i class="ti ti-math" aria-hidden="true" style="color:#0F6E56"></i>Debit drama</div>
+      <div class="mot-q">"I'm not ignoring you, I'm just figuring out why the Debit side is being so dramatic today."</div>
+    </div>
+    <div class="mot-card">
+      <div class="mot-head"><i class="ti ti-book" aria-hidden="true" style="color:#185FA5"></i>English hack</div>
+      <div class="mot-txt">"Accounting" starts with A and ends with G — just like "Amazing." Coincidence? Absolutely not.</div>
+    </div>
+    <button class="tip-btn" onclick="sendPrompt('Give me a motivational study tip for a CA student grinding Tax, Law, Accounts, Audit, Costing and FM-SM today')">Get today's motivation tip ↗</button>
+  </div>
+</div>
+
+<script>
+const DAYS=['M','T','W','T','F','S','S'];
+const DNAMES=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const tasks=[
+  {t:'05:30',n:"Karan's Resurrection (Wake Up)",tag:'life',h:0},
+  {t:'05:45',n:'Oiling the Machine (Water + Stretch)',tag:'life',h:0},
+  {t:'06:00',n:'Brain vs. Govt: DT/IDT Battle',tag:'tax',h:2},
+  {t:'08:00',n:'Fuel Injection (Breakfast)',tag:'life',h:0},
+  {t:'08:30',n:'Legal Drama (Reading Stories)',tag:'law',h:2},
+  {t:'10:30',n:'Charging Brain Cells (Coffee)',tag:'life',h:0},
+  {t:'11:00',n:'Calculator Torture (Adv. Accounts)',tag:'acc',h:2},
+  {t:'01:00',n:'Statutory Coma (Lunch)',tag:'life',h:0},
+  {t:'02:00',n:"'Hello-tion' Hour (Grammar/News)",tag:'eng',h:1},
+  {t:'03:00',n:'Practical Post-Lunch Grind',tag:'cost',h:1.5},
+  {t:'04:30',n:'High Tea (Chai is Life)',tag:'life',h:0},
+  {t:'05:00',n:'Professional Spying (Audit/Revision)',tag:'audit',h:2},
+  {t:'07:00',n:'Escaping the Table (Walk/Run)',tag:'life',h:0},
+  {t:'08:00',n:'Money Games & Strategy',tag:'fm',h:1.75},
+  {t:'09:45',n:'Dinner & Chill (No Studying Allowed!)',tag:'life',h:0},
+  {t:'10:30',n:'Logging Off From Earth (Sleep)',tag:'life',h:0}
+];
+const subjects=['tax','law','acc','eng','cost','audit','fm'];
+const subNames={tax:'Tax',law:'Law',acc:'Accounts',eng:'English',cost:'Costing',audit:'Audit',fm:'FM-SM'};
+const subColors={tax:'#D85A30',law:'#534AB7',acc:'#185FA5',eng:'#3B6D11',cost:'#BA7517',audit:'#D4537E',fm:'#0F6E56'};
+
+let st={};
+try{st=JSON.parse(localStorage.getItem('karan_m')||'{}');}catch(e){}
+const save=()=>{try{localStorage.setItem('karan_m',JSON.stringify(st));}catch(e){}};
+const key=(ti,di)=>ti+'_'+di;
+
+const tod=new Date();
+let todIdx=tod.getDay()-1;if(todIdx<0)todIdx=6;
+let selDay=todIdx;
+
+function initCountdown(){
+  const target=new Date('2027-05-31');
+  const now=new Date();
+  const diff=Math.max(0,target-now);
+  const days=Math.floor(diff/864e5);
+  document.getElementById('cd-d').textContent=days;
+  document.getElementById('cd-m').textContent=Math.floor(days/30);
+  document.getElementById('cd-w').textContent=Math.floor(days/7);
+  const studyH=tasks.filter(t=>t.h>0).reduce((a,t)=>a+t.h,0);
+  document.getElementById('cd-h').textContent=studyH.toFixed(1);
+}
+
+function buildDays(){
+  const strip=document.getElementById('day-strip');
+  strip.innerHTML='';
+  DAYS.forEach((d,i)=>{
+    const w=document.createElement('div');
+    w.className='dd';
+    w.onclick=()=>selectDay(i);
+    const circ=document.createElement('div');
+    circ.className='dd-circle'+(i===todIdx?' today':'')+(i===selDay?' sel':'');
+    circ.id='dd'+i;
+    circ.textContent=d;
+    const lbl=document.createElement('div');
+    lbl.className='dd-lbl';
+    lbl.textContent=DNAMES[i].slice(0,3);
+    w.appendChild(circ);w.appendChild(lbl);
+    strip.appendChild(w);
+  });
+}
+
+function selectDay(d){
+  selDay=d;
+  DAYS.forEach((_,i)=>{
+    const el=document.getElementById('dd'+i);
+    el.className='dd-circle'+(i===todIdx?' today':'')+(i===d?' sel':'');
+  });
+  document.getElementById('now-txt').innerHTML=`<strong>${DNAMES[d]}</strong>${d===todIdx?' — Today':''}`;
+  buildTasks();
+}
+
+function buildTasks(){
+  const list=document.getElementById('task-list');
+  list.innerHTML='';
+  tasks.forEach((task,ti)=>{
+    const k=key(ti,selDay);
+    const done=!!st[k];
+    const row=document.createElement('div');
+    row.className='task-row'+(done?' done-row':'');
+    row.innerHTML=`<span class="task-time">${task.t}</span>
+      <span class="task-tag tg-${task.tag}">${task.tag==='life'?'':task.tag.toUpperCase()}</span>
+      <span class="task-name${done?' struck':''}">${task.n}</span>
+      <span class="chk${done?' done':''}" onclick="toggle(${ti})" title="Mark done">${done?'<i class="ti ti-check"></i>':''}</span>`;
+    list.appendChild(row);
+  });
+}
+
+function toggle(ti){
+  const k=key(ti,selDay);
+  st[k]=!st[k];
+  save();
+  buildTasks();
+  updateStats();
+  updateProgress();
+}
+
+function updateStats(){
+  let todDone=0,todH=0,wkDone=0,wkTotal=tasks.length*7;
+  tasks.forEach((task,ti)=>{
+    for(let di=0;di<7;di++){
+      if(st[key(ti,di)]){wkDone++;if(di===todIdx){todDone++;todH+=task.h;}}
+    }
+  });
+  document.getElementById('s-today').textContent=todDone+'/'+tasks.length;
+  document.getElementById('s-hours').textContent=todH.toFixed(1)+'h';
+  const pct=Math.round(wkDone/wkTotal*100);
+  document.getElementById('s-week').textContent=pct+'%';
+  let streak=0;
+  for(let d=todIdx;d>=0;d--){
+    const studyTasks=tasks.filter(t=>t.h>0);
+    const allDone=studyTasks.every((t,i)=>st[key(tasks.indexOf(studyTasks[i]),d)]);
+    if(allDone)streak++;else break;
+  }
+  document.getElementById('s-streak').textContent=streak;
+  const ring=document.getElementById('ring');
+  ring.style.strokeDashoffset=176-(176*(pct/100));
+  document.getElementById('ring-pct').textContent=pct+'%';
+  document.getElementById('ring-detail').textContent=pct===0?'Tick off tasks to build your progress.':pct<50?`${pct}% done — keep grinding!`:pct<80?`Great work — ${pct}% complete!`:`Almost perfect — ${pct}% done!`;
+}
+
+function updateProgress(){
+  const bars=document.getElementById('sub-bars');
+  bars.innerHTML='';
+  subjects.forEach(s=>{
+    let done=0,total=0;
+    tasks.forEach((task,ti)=>{
+      if(task.tag===s){for(let di=0;di<7;di++){total++;if(st[key(ti,di)])done++;}}
+    });
+    const pct=total?Math.round(done/total*100):0;
+    bars.innerHTML+=`<div class="sub-row">
+      <div class="sub-nm">${subNames[s]}</div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${subColors[s]}"></div></div>
+      <div class="bar-pct">${pct}%</div>
+    </div>`;
+  });
+}
+
+function showTab(t){
+  ['tracker','progress','fuel'].forEach(s=>{
+    document.getElementById('sec-'+s).className='sec'+(s===t?' v':'');
+    document.getElementById('tab-'+s).className='nb'+(s===t?' on':'');
+  });
+}
+
+initCountdown();
+buildDays();
+buildTasks();
+updateStats();
+updateProgress();
+</script>
